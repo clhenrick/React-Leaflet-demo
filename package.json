@@ -1,24 +1,24 @@
 {
-  "name": "react-tutorial-app-guide",
+  "name": "React-Leaflet-demo ",
   "version": "1.0.0",
-  "description": "react tutorial by Tyler McGinnis",
+  "description": "Leaflet React demo",
   "main": "gulpfile.js",
   "scripts": {
     "test": "n/a"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/n/a.git"
+    "url": "git+https://github.com/clhenrick/React-Leaflet-demo"
   },
   "keywords": [
     "react"
   ],
-  "author": "Tyler McGinnis",
+  "author": "Chris Henrick",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/n/a/issues"
+    "url": "https://github.com/clhenrick/React-Leaflet-demo/issues"
   },
-  "homepage": "https://github.com/n/a#readme",
+  "homepage": "https://github.com/clhenrick/React-Leaflet-demo#readme",
   "devDependencies": {
     "browser-sync": "^2.10.1",
     "browserify": "^12.0.1",

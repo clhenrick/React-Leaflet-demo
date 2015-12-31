@@ -14,8 +14,8 @@ var reactify = require('reactify');
 var streamify = require('gulp-streamify');
 
 // TODO: implement browserSync with live page reloading
-var browserSync = require('browser-sync');
-var reload = browserSync.reload;
+// var browserSync = require('browser-sync');
+// var reload = browserSync.reload;
 
 // object containing file names and paths for output
 var path = {
