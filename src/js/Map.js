@@ -67,6 +67,16 @@ var Map = React.createClass({
     if (e) e.preventDefault();
   },
 
+  getData: function() {
+    qwest.get('../data/nyc_subway_stops.geojson')
+      .then(function(xhr, res) {
+          console.log(res);
+      })
+      .catch(function(xhr, res, e) {
+        console.log('qwest catch: ', xhr, res, e);
+      });
+  },
+
   getID: function() {
     // get the "id" attribute of our component's DOM node
     return ReactDOM.findDOMNode(this).id;
