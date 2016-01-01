@@ -135,7 +135,11 @@ var Map = React.createClass({
   },
 
   zoomToFeature: function(target) {
-    map.fitBounds(target.getBounds());
+    var fitBoundsParams = {
+      paddingTopLeft: [200,0],
+      paddingBottomRight: [0,0]
+    };
+    map.fitBounds(target.getBounds(), fitBoundsParams);
   },
 
   filter: function(feature, layer) { 
