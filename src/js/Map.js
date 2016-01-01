@@ -129,6 +129,13 @@ var Map = React.createClass({
       geojson: this.state.geojson,
       geojsonLayer: this.state.geojsonLayer
     });
+
+    // fit the filtered geojson within the map's bounds
+    this.zoomToFeature(this.state.geojsonLayer);
+  },
+
+  zoomToFeature: function(target) {
+    map.fitBounds(target.getBounds());
   },
 
   filter: function(feature, layer) { 
@@ -156,6 +163,7 @@ var Map = React.createClass({
 
     if (feature.properties && feature.properties.NAME && feature.properties.LINE) {
 
+      // if the subway lines array has not been made, create it
       if (subwayLines.length === 0) {
         // add subway lines to our subway lines array 
         feature.properties.LINE.split('-').forEach(function(d,i){
