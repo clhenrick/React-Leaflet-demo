@@ -1,9 +1,10 @@
 var React = require('react');
 
+// the component for filtering the subway entrances by subway line
 var Filter = React.createClass({
   getInitialState: function() {
     return {
-      filter: ''
+      filter: '*'
     };
   },
 
@@ -26,16 +27,15 @@ var Filter = React.createClass({
   handleUpdate: function(){
     this.props.filterLines(this.state.filter);
     this.props.curFilter = this.state.filter;
-    this.setState({
-      filter: ''
-    });
+    // this.setState({
+    //   filter: ''
+    // });
   },
 
   render: function() {
+    console.log(this.props.lines);
     var filterOptions = this.props.lines.map(function(line){
-      if (line === "All lines") {
-        return <option value="*">All lines</option>;
-      }
+      // console.log(line);      
       return <option value={line}>{line}</option>;
     });
 
@@ -44,7 +44,7 @@ var Filter = React.createClass({
         <hr/>
         <h3>Brooklyn Subway Entrances</h3>
         <p>Filter Entrances by Subway Line</p>
-        <select defaultValue={this.props.curFilter} type="select" name="filterlines" onChange={this.updateFilter}>
+        <select defaultValue="*" type="select" name="filterlines" onChange={this.updateFilter}>
           {filterOptions}
         </select>
       </div>

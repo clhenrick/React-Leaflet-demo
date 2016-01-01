@@ -15,6 +15,7 @@ var config = {};
 var map;
 
 // an array to store BK subway lines
+var tmpSubwayLines = [];
 var subwayLines = [];
 
 // map paramaters to pass to L.map when we instantiate it
@@ -82,6 +83,11 @@ var Map = React.createClass({
   updateMap: function(line) {
     // change the subway line filter
     console.log("updateMap line: ", line);
+    
+    if (line === "All lines") {
+      line = "*";
+    }
+
     this.state.filter = line;
     this.setState({
       filter: this.state.filter
@@ -149,17 +155,22 @@ var Map = React.createClass({
   onEachFeature: function(feature, layer) {
 
     if (feature.properties && feature.properties.NAME && feature.properties.LINE) {
-      // add subway lines to our subway lines array 
-      feature.properties.LINE.split('-').forEach(function(d,i){
-        subwayLines.push(d);
-      });
 
-      if (subwayLines.length > 0 && this.state.geojson.features.indexOf(feature) === this.state.numEntrances - 1) {
-        // make our subwayLines array have only unique values for the lines
-        subwayLines = subwayLines.filter(function(value, index, self){
-          return self.indexOf(value) === index;
-        }).sort();
-        subwayLines.unshift('All lines');
+      if (subwayLines.length === 0) {
+        // add subway lines to our subway lines array 
+        feature.properties.LINE.split('-').forEach(function(d,i){
+          tmpSubwayLines.push(d);
+        });
+
+        if (this.state.geojson.features.indexOf(feature) === this.state.numEntrances - 1) {
+          
+          // make our subwayLines array have only unique values for the lines
+          subwayLines = tmpSubwayLines.filter(function(value, index, self){
+            return self.indexOf(value) === index;
+          }).sort();
+          subwayLines.unshift('All lines');
+          console.log(subwayLines);                  
+        }
       }
 
       var popupContent = '<h3>' + feature.properties.NAME + 
