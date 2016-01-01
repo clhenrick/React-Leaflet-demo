@@ -3,15 +3,16 @@
 
 'use strict';
 
-// all the libraries that we will be using with our Gulp tasks
 var gulp = require('gulp');
-var uglify = require('gulp-uglify');
-var htmlreplace = require('gulp-html-replace');
+// helper for using gulp-plugins
+var $ = require('gulp-load-plugins')({
+  pattern: ['gulp-*', 'gulp.*'],
+  replaceString: /\bgulp[\-.]/
+});
 var source = require('vinyl-source-stream');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var reactify = require('reactify');
-var streamify = require('gulp-streamify');
 
 // TODO: implement browserSync with live page reloading
 // var browserSync = require('browser-sync');
@@ -25,7 +26,8 @@ var path = {
   DEST: 'dist',
   DEST_BUILD: 'dist/build',
   DEST_SRC: 'dist/src',
-  ENTRY_POINT: './src/js/App.js'
+  ENTRY_POINT: './src/js/App.js',
+  DEPENDENCIES: 'node_modules/'
 };
 
 // helper task to copy our index.html from src to dest
@@ -67,14 +69,14 @@ gulp.task('build', function(){
   })
     .bundle()
     .pipe(source(path.MINIFIED_OUT))
-    .pipe(streamify(uglify()))
+    .pipe($.streamify($.uglify()))
     .pipe(gulp.dest(path.DEST_BUILD));
 });
 
 // swap out build.js with build.min.js in index.html
 gulp.task('replaceHTML', function(){
   gulp.src(path.HTML)
-    .pipe(htmlreplace({
+    .pipe($.htmlReplace({
       'js': 'build/' + path.MINIFIED_OUT
     }))
     .pipe(gulp.dest(path.DEST));
