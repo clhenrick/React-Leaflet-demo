@@ -79,12 +79,14 @@ var Map = React.createClass({
 
   },
 
-  updateMap: function(lines) {
+  updateMap: function(line) {
     // change the subway line filter
-    this.state.filter = lines;
+    console.log("updateMap line: ", line);
+    this.state.filter = line;
     this.setState({
       filter: this.state.filter
     });
+    this.getData();
   },
 
   getData: function() {
@@ -105,7 +107,18 @@ var Map = React.createClass({
 
   addGeoJSON: function(data) {
     this.state.geojson = data;
-    this.state.geojsonLayer.addData(data);
+
+    if (map.hasLayer(this.state.geojsonLayer)){
+      console.log('map has geojson layer, removing');
+      map.removeLayer(this.state.geojsonLayer);  
+    }
+
+    this.state.geojsonLayer = L.geoJson(data, {
+      onEachFeature: this.onEachFeature,
+      pointToLayer: this.pointToLayer,
+      filter: this.filter
+    }).addTo(map);
+
     this.setState({
       geojson: this.state.geojson,
       geojsonLayer: this.state.geojsonLayer
@@ -141,7 +154,7 @@ var Map = React.createClass({
         subwayLines.push(d);
       });
 
-      if (this.state.geojson.features.indexOf(feature) === this.state.numEntrances - 1) {
+      if (subwayLines.length > 0 && this.state.geojson.features.indexOf(feature) === this.state.numEntrances - 1) {
         // make our subwayLines array have only unique values for the lines
         subwayLines = subwayLines.filter(function(value, index, self){
           return self.indexOf(value) === index;
@@ -169,15 +182,9 @@ var Map = React.createClass({
     
     // set our state to include the tile layer & an empty geojson layer
     this.state.tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
-    this.state.geojsonLayer = L.geoJson(null, {
-      onEachFeature: this.onEachFeature,
-      pointToLayer: this.pointToLayer,
-      filter: this.filter
-    }).addTo(map);
 
     this.setState({
-      tileLayer: this.state.tileLayer,
-      geojsonLayer: this.state.geojsonLayer,
+      tileLayer: this.state.tileLayer
     });
   },
 
@@ -187,7 +194,7 @@ var Map = React.createClass({
     // we could pass other *child* components with it if we like
     return (
       <div id="mapUI">
-        <Filter lines={subwayLines} curFilter={this.state.filter} updateMap={this.state.updateMap} />
+        <Filter lines={subwayLines} curFilter={this.state.filter} filterLines={this.updateMap} />
         <div id="map"></div>
       </div>
     );
