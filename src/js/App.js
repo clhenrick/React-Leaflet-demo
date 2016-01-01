@@ -1,3 +1,5 @@
+var React = require('react');
+var ReactDOM = require('react-dom');
 // require our Map React component
 var Map = require('./Map');
 
