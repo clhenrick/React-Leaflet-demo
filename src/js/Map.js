@@ -4,12 +4,18 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var qwest = require('qwest');
 
+// add our subway line filter component
+var Filter = require('./Filter');
+
 // let's store the map configuration properties, 
 // we could also move this to a separate file & require it
 var config = {};
 
 // a local variable to store our instance of L.map
 var map;
+
+// an array to store BK subway lines
+var subwayLines = [];
 
 // map paramaters to pass to L.map when we instantiate it
 config.params = {
@@ -26,10 +32,10 @@ config.params = {
 
 // params for the L.tileLayer (aka basemap)
 config.tileLayer = {
-  uri: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  uri: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
   params: {
     minZoom: 11,
-    attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
     id: '',
     accessToken: ''
   }
@@ -42,7 +48,9 @@ var Map = React.createClass({
     return {
       tileLayer : null,
       geojsonLayer: null,
-      geojson: null
+      geojson: null,
+      filter: '*',
+      numEntrances: null,
     };
   },
   
@@ -71,9 +79,12 @@ var Map = React.createClass({
 
   },
 
-  updateMap: function(e) {
-    // TODO: a function to update our map and its state
-    if (e) e.preventDefault();
+  updateMap: function(lines) {
+    // change the subway line filter
+    this.state.filter = lines;
+    this.setState({
+      filter: this.state.filter
+    });
   },
 
   getData: function() {
@@ -81,9 +92,10 @@ var Map = React.createClass({
     
     qwest.get('../bk_subway_entrances.geojson')
       .then(function(xhr, res) {
-          // console.log(xhr, res);
           // hack to pass geojson data, probably not the right way to do this...
           res = JSON.parse(res);
+          that.state.numEntrances = res.features.length;
+          that.setState({ numEntrances: that.state.numEntrances });
           that.addGeoJSON(res);
       })
       .catch(function(xhr, res, e) {
@@ -100,8 +112,43 @@ var Map = React.createClass({
     });
   },
 
+  filter: function(feature, layer) { 
+    // filter the subway entrances based on the map's current search filter
+    var test = feature.properties.LINE.split('-').indexOf(this.state.filter);
+    if (this.state.filter === '*' || test !== -1) {
+      return true;
+    }
+  },
+
+  pointToLayer: function(feature, latlng) {
+    var markerParams = {
+      radius: 4,
+      fillColor: 'orange',
+      color: '#fff',
+      weight: 1,
+      opacity: 0.5,
+      fillOpacity: 0.8
+    };
+
+    return L.circleMarker(latlng, markerParams);
+  },
+
   onEachFeature: function(feature, layer) {
+
     if (feature.properties && feature.properties.NAME && feature.properties.LINE) {
+      // add subway lines to our subway lines array 
+      feature.properties.LINE.split('-').forEach(function(d,i){
+        subwayLines.push(d);
+      });
+
+      if (this.state.geojson.features.indexOf(feature) === this.state.numEntrances - 1) {
+        // make our subwayLines array have only unique values for the lines
+        subwayLines = subwayLines.filter(function(value, index, self){
+          return self.indexOf(value) === index;
+        }).sort();
+        subwayLines.unshift('All lines');
+      }
+
       var popupContent = '<h3>' + feature.properties.NAME + 
                                        '</h3><strong>Access to MTA lines:</strong> ' + 
                                        feature.properties.LINE;
@@ -111,7 +158,7 @@ var Map = React.createClass({
 
   getID: function() {
     // get the "id" attribute of our component's DOM node
-    return ReactDOM.findDOMNode(this).id;
+    return ReactDOM.findDOMNode(this).querySelectorAll('#map')[0];
   },
 
   init: function(id) {
@@ -123,12 +170,14 @@ var Map = React.createClass({
     // set our state to include the tile layer & an empty geojson layer
     this.state.tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
     this.state.geojsonLayer = L.geoJson(null, {
-      onEachFeature: this.onEachFeature
+      onEachFeature: this.onEachFeature,
+      pointToLayer: this.pointToLayer,
+      filter: this.filter
     }).addTo(map);
 
     this.setState({
       tileLayer: this.state.tileLayer,
-      geojsonLayer: this.state.geojsonLayer
+      geojsonLayer: this.state.geojsonLayer,
     });
   },
 
@@ -137,10 +186,14 @@ var Map = React.createClass({
     // right now this doesn't look like anything special but 
     // we could pass other *child* components with it if we like
     return (
-      <div id="map"></div>
-    )
+      <div id="mapUI">
+        <Filter lines={subwayLines} curFilter={this.state.filter} updateMap={this.state.updateMap} />
+        <div id="map"></div>
+      </div>
+    );
   }
 });
+
 
 // export our Map component so that Browserify can include it with other components that require it
 module.exports = Map;
