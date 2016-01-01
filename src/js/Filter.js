@@ -33,19 +33,19 @@ var Filter = React.createClass({
   },
 
   render: function() {
-    console.log(this.props.lines);
-    var filterOptions = this.props.lines.map(function(line){
-      // console.log(line);      
-      return <option value={line}>{line}</option>;
-    });
-
     return (
       <div className="filterSubwayLines">
         <hr/>
         <h3>Brooklyn Subway Entrances</h3>
         <p>Filter Entrances by Subway Line</p>
         <select defaultValue="*" type="select" name="filterlines" onChange={this.updateFilter}>
-          {filterOptions}
+          {this.props.lines.map(function(line, i){
+              // console.log(line);      
+              // the "key" property is recommended by React when creating list like elements
+              return (
+                <option value={line} key={i}>{line}</option>
+              );
+            }, this)}
         </select>
       </div>
     );

@@ -98,13 +98,16 @@ var Map = React.createClass({
   getData: function() {
     var that = this;
     
-    qwest.get('../bk_subway_entrances.geojson')
+    qwest.get('bk_subway_entrances.geojson')
       .then(function(xhr, res) {
+
+        if (that.isMounted()) {
           // hack to pass geojson data, probably not the right way to do this...
           res = JSON.parse(res);
           that.state.numEntrances = res.features.length;
           that.setState({ numEntrances: that.state.numEntrances });
           that.addGeoJSON(res);
+        }
       })
       .catch(function(xhr, res, e) {
         console.log('qwest catch: ', xhr, res, e);
