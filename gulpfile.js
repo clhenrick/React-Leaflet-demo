@@ -21,6 +21,7 @@ var reactify = require('reactify');
 // object containing file names and paths for output
 var path = {
   HTML: 'src/index.html',
+  JSON: 'data/bk_subway_entrances.geojson',
   MINIFIED_OUT: 'build.min.js',
   OUT: 'build.js',
   DEST: 'dist',
@@ -32,7 +33,7 @@ var path = {
 
 // helper task to copy our index.html from src to dest
 gulp.task('copy', function(){
-  gulp.src(path.HTML)
+  gulp.src([path.HTML, path.JSON])
     .pipe(gulp.dest(path.DEST));
 });
 
@@ -83,5 +84,5 @@ gulp.task('replaceHTML', function(){
 });
 
 // these are what get called when we do either `gulp` or `gulp production` on the CLI
-gulp.task('default', ['watch']);
+gulp.task('default', ['watch', 'copy']);
 gulp.task('production', ['replaceHTML', 'build']);
