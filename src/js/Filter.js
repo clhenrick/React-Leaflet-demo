@@ -27,9 +27,6 @@ var Filter = React.createClass({
   handleUpdate: function(){
     this.props.filterLines(this.state.filter);
     this.props.curFilter = this.state.filter;
-    // this.setState({
-    //   filter: ''
-    // });
   },
 
   render: function() {
@@ -37,10 +34,10 @@ var Filter = React.createClass({
       <div className="filterSubwayLines">
         <hr/>
         <h3>Brooklyn Subway Entrances</h3>
+        <p>A <a href="http://leafletjs.com/">Leaflet</a> &amp; <a href="https://facebook.github.io/react/">React</a> demo</p>
         <p>Filter Entrances by Subway Line</p>
         <select defaultValue="*" type="select" name="filterlines" onChange={this.updateFilter}>
-          {this.props.lines.map(function(line, i){
-              // console.log(line);      
+          {this.props.lines.map(function(line, i){   
               // the "key" property is recommended by React when creating list like elements
               return (
                 <option value={line} key={i}>{line}</option>
