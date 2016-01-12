@@ -101,12 +101,10 @@ var Map = React.createClass({
     var that = this;
     
     // qwest is a library for making Ajax requests, we use it here to load GeoJSON data
-    qwest.get('bk_subway_entrances.geojson')
+    qwest.get('bk_subway_entrances.geojson', null, { responseType : 'json' })
       .then(function(xhr, res) {
 
         if (that.isMounted()) {
-          // parse the JSON data
-          res = JSON.parse(res);
           // count the number of features and store it in the component's state for use later
           that.state.numEntrances = res.features.length;
           that.setState({ numEntrances: that.state.numEntrances });
