@@ -16,6 +16,6 @@ Make sure you have Node.JS installed and Gulp installed globally.
 Then do: `npm install`
 
 ## To Run
-Do `gulp` in the root of this repo and run a local server in the `dist/` directory. Gulp will update `dist/` with necessary files as you make changes, though currently you must manually refresh the page to see the changes implemented. 
+Do `gulp` in the root of this repo, Gulp will create and update the `dist/` directory with bundled files. Open a browser at `http://localhost:8080/index.html` to see the live app. Currently you must manually refresh the page to see the changes implemented. 
 
 Alternatively do `gulp production` to generate minified production code.
