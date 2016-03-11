@@ -27,7 +27,6 @@ var Filter = React.createClass({
   handleUpdate: function(){
     // filterLines passes the value of "filter" to the Map component's updateMap method
     this.props.filterLines(this.state.filter);
-    this.props.curFilter = this.state.filter;
   },
 
   render: function() {
