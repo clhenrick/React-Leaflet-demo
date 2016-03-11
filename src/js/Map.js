@@ -104,6 +104,8 @@ var Map = React.createClass({
     qwest.get('bk_subway_entrances.geojson', null, { responseType : 'json' })
       .then(function(xhr, res) {
 
+        console.log(res);
+
         if (that.isMounted()) {
           // count the number of features and store it in the component's state for use later
           that.state.numEntrances = res.features.length;
@@ -120,19 +122,23 @@ var Map = React.createClass({
   addGeoJSON: function(data) {
     this.state.geojson = data;
 
+    console.log('this.state.geojson: ', this.state.geojson);
+    debugger;
+
     // if the GeoJSON layer has already been added, remove it.
     // this allows the GeoJSON to be redrawn when the user filters it
-    if (map.hasLayer(this.state.geojsonLayer)){
-      // console.log('map has geojson layer, removing');
-      map.removeLayer(this.state.geojsonLayer);  
+    if (this.state.geojsonLayer && data){
+      // remove the data from the geojson layer
+      this.state.geojsonLayer.clearLayers()
+      this.state.geojsonLayer.addData(data);
+    } else if (!this.state.geojsonLayer) {
+      // add our GeoJSON to the component's state and the Leaflet map
+      this.state.geojsonLayer = L.geoJson(data, {
+        onEachFeature: this.onEachFeature,
+        pointToLayer: this.pointToLayer,
+        filter: this.filter
+      }).addTo(map);
     }
-
-    // add our GeoJSON to the component's state and the Leaflet map
-    this.state.geojsonLayer = L.geoJson(data, {
-      onEachFeature: this.onEachFeature,
-      pointToLayer: this.pointToLayer,
-      filter: this.filter
-    }).addTo(map);
 
     // set our component's state with the GeoJSON data and L.geoJson layer
     this.setState({
@@ -157,6 +163,8 @@ var Map = React.createClass({
     // filter the subway entrances based on the map's current search filter
     // returns true only if the filter value matches the value of feature.properties.LINE
     var test = feature.properties.LINE.split('-').indexOf(this.state.filter);
+    console.log('test: ', test, ' filter: ', this.state.filter);
+    
     if (this.state.filter === '*' || test !== -1) {
       return true;
     }
