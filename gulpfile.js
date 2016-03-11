@@ -34,7 +34,15 @@ var path = {
 // helper task to copy our index.html from src to dest
 gulp.task('copy', function(){
   gulp.src([path.HTML, path.JSON])
-    .pipe(gulp.dest(path.DEST));
+    .pipe(gulp.dest(path.DEST))
+    .pipe($.connect.reload());
+});
+
+gulp.task('connect', function() {
+  $.connect.server({
+    root: 'dist',
+    livereload: true
+  });
 });
 
 // watch: bundle everything and convert our JSX but don't minify or uglify it
@@ -84,5 +92,5 @@ gulp.task('replaceHTML', function(){
 });
 
 // these are what get called when we do either `gulp` or `gulp production` on the CLI
-gulp.task('default', ['watch', 'copy']);
+gulp.task('default', ['connect', 'watch', 'copy']);
 gulp.task('production', ['replaceHTML', 'build']);
