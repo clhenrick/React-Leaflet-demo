@@ -2,6 +2,7 @@
 // import some dependencies
 var React = require('react');
 var ReactDOM = require('react-dom');
+var L = require('leaflet');
 var qwest = require('qwest');
 
 // add our subway line filter component
@@ -84,7 +85,6 @@ var Map = React.createClass({
 
   updateMap: function(line) {
     // change the subway line filter
-    console.log("updateMap line: ", line);
     
     if (line === "All lines") {
       line = "*";
@@ -104,8 +104,6 @@ var Map = React.createClass({
     qwest.get('bk_subway_entrances.geojson', null, { responseType : 'json' })
       .then(function(xhr, res) {
 
-        console.log(res);
-
         if (that.isMounted()) {
           // count the number of features and store it in the component's state for use later
           that.state.numEntrances = res.features.length;
@@ -122,10 +120,7 @@ var Map = React.createClass({
   addGeoJSON: function(data) {
     this.state.geojson = data;
 
-    console.log('this.state.geojson: ', this.state.geojson);
-    debugger;
-
-    // if the GeoJSON layer has already been added, remove it.
+    // if the GeoJSON layer has already been created, clear it.
     // this allows the GeoJSON to be redrawn when the user filters it
     if (this.state.geojsonLayer && data){
       // remove the data from the geojson layer
@@ -163,7 +158,6 @@ var Map = React.createClass({
     // filter the subway entrances based on the map's current search filter
     // returns true only if the filter value matches the value of feature.properties.LINE
     var test = feature.properties.LINE.split('-').indexOf(this.state.filter);
-    console.log('test: ', test, ' filter: ', this.state.filter);
     
     if (this.state.filter === '*' || test !== -1) {
       return true;

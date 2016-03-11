@@ -4,6 +4,7 @@
 'use strict';
 
 var gulp = require('gulp');
+var useref = require('gulp-useref');
 // helper for using gulp-plugins
 var $ = require('gulp-load-plugins')({
   pattern: ['gulp-*', 'gulp.*'],
@@ -91,6 +92,12 @@ gulp.task('replaceHTML', function(){
     .pipe(gulp.dest(path.DEST));
 });
 
+gulp.task('useref', function(){
+  gulp.src(path.HTML)
+    .pipe(useref())
+    .pipe(gulp.dest(path.DEST));
+});
+
 // these are what get called when we do either `gulp` or `gulp production` on the CLI
-gulp.task('default', ['connect', 'watch', 'copy']);
-gulp.task('production', ['replaceHTML', 'build']);
+gulp.task('default', ['connect', 'watch', 'copy', 'useref']);
+gulp.task('production', ['useref', 'build']);
