@@ -2,12 +2,6 @@ var React = require('react');
 
 // the UI component for filtering the subway entrances by subway line
 var Filter = React.createClass({
-  getInitialState: function() {
-    return {
-      filter: ''
-    };
-  },
-
   getDefaultProps: function(){
     return {
       lines: [],
@@ -16,25 +10,15 @@ var Filter = React.createClass({
   },
 
   updateFilter: function(e) {
-    // console.log(e.target.value);
-    // this.state.filter = e.target.value;
-    // this.setState({
-    //   filter: this.state.filter
-    // });
-    // this.handleUpdate();
+    // pass the filter to our callback which tells our Map to update the GeoJSON overlay
     this.props.filterLines(e.target.value);
-  },
-
-  handleUpdate: function(){
-    // filterLines passes the value of "filter" to the Map component's updateMap method
-    // this.props.filterLines(this.state.filter);
   },
 
   render: function() {
     // this is the JSX that will become the Filter UI in the DOM, notice it looks pretty similar to HTML
     // notice in the select element onChange is set to the updateFilter method
-    // thus when a user selects a new subway line to view, the compoent's state is updated
-    // and the parent component, Map, reloads the GeoJSON data with the current filter value
+    // thus when a user selects a new subway line to view, the component passes the new filter value
+    // to the parent component, Map, which reloads the GeoJSON data with the current filter value
     return (
       <div className="filterSubwayLines">
         <hr/>
@@ -45,11 +29,11 @@ var Filter = React.createClass({
             { /* This is how to do a comment in JSX! notice the curly braces. */ }
             { /* We render the select's option elements by maping each of the values of subwayLines array to option elements */ }
             {this.props.lines.map(function(line, i){
-                { /* the "key" property is recommended by React when creating list like elements */ }
-                return (
+              { /* the "key" property is recommended by React when creating list like elements */ }
+              return (
                   <option value={line} key={i}>{line}</option>
                 );
-              }, this)}
+            }, this)}
         </select>
       </div>
     );

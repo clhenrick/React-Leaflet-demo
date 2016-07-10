@@ -9,11 +9,12 @@ var qwest = require('qwest');
 var Filter = require('./Filter');
 
 // let's store the map configuration properties,
-// we could also move this to a separate file & require it
+// we could also move this to a separate file & require it...
 var config = {};
 
 // an array to store BK subway lines
 var tmpSubwayLines = [];
+// tmp array used to eventually create the above array
 var subwayLines = [];
 
 // map paramaters to pass to L.map when we instantiate it
@@ -60,34 +61,34 @@ var Map = React.createClass({
 
   componentWillMount: function() {
     // code to run just before adding the map
-    console.log('***Component Will Mount****');
   },
 
   componentDidMount: function() {
-    // code to run just after adding the map to the DOM
-    console.log('***Component DID Mount****');
-    // make the Ajax request for the GeoJSON data
+    // code to run just after the component "mounts" / DOM elements are created
+    // make the AJAX request for the GeoJSON data
     if (!this.fetchingData) this.getData();
+    // create the Leaflet map object
     if (!this.map) this.init(this.getID());
   },
 
-  componentWillUpdate: function(nextProps, nextState) {
+  componentDidUpdate(prevProps, prevState) {
+    // code to run when the component receives new props or state
+    // check to see if geojson is stored, map is created, and geojson overlay needs to be added
+    if (this.state.geojson && this.map && !this.state.geojsonLayer) {
+      // add the geojson overlay
+      this.addGeoJSONLayer(this.state.geojson);
+    }
 
-    if (nextState.filter !== this.state.filter) {
-      console.log(this.state, nextState);
+    // check to see if the subway lines filter has changed
+    if (this.state.filter !== prevState.filter) {
+      // filter / re-render the geojson overlay
       this.filterGeoJSONLayer();
     }
   },
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.geojson && this.map && !this.state.geojsonLayer) {
-      console.log('should add geojson layer', nextState.geojson);
-      this.addGeoJSONLayer(this.state.geojson);
-    }
-  }
-
   componentWillUnmount: function() {
     // code to run just before unmounting the component
+    // this destroys the Leaflet map object & related event listeners
     this.map.remove();
   },
 
@@ -96,6 +97,7 @@ var Map = React.createClass({
     if (subwayLine === "All lines") {
       subwayLine = "*";
     }
+    // update our state with the new filter value
     this.setState({
       filter: subwayLine
     });
@@ -109,8 +111,8 @@ var Map = React.createClass({
     qwest.get('bk_subway_entrances.geojson', null, { responseType : 'json' })
       .then(function(xhr, res) {
         if (that.isMounted()) {
-          console.log(res);
-          // store the number of GeoJSON features in the component's state for use later
+          // store the number of GeoJSON features (subway entrances) in the component's state for use later
+          // as well as the raw GeoJSON data so it can be reused
           that.setState({
             numEntrances: res.features.length,
             geojson: res
@@ -124,8 +126,7 @@ var Map = React.createClass({
   },
 
   addGeoJSONLayer: function(geojson) {
-    console.log(geojson);
-    // create a native Leaflet GeoJSON SVG Layer for Leaflet to add as an overlay
+    // create a native Leaflet GeoJSON SVG Layer to add as an interactive overlay to the map
     // an options object is passed to define functions for customizing the layer
     var geojsonLayer = L.geoJson(geojson, {
       onEachFeature: this.onEachFeature,
@@ -135,21 +136,25 @@ var Map = React.createClass({
     geojsonLayer.addTo(this.map);
     // store the Leaflet GeoJSON layer in our component state for use later
     this.setState({ geojsonLayer: geojsonLayer });
-    // fit the filtered or unfiltered GeoJSON layer within the map's bounds / viewport
+    // fit the geographic extent of the GeoJSON layer within the map's bounds / viewport
     this.zoomToFeature(geojsonLayer);
   },
 
   filterGeoJSONLayer: function() {
-    console.log(this.state.geojson);
+    // clear the geojson layer of its old data
+    this.state.geojsonLayer.clearLayers();
+    // create the new geojson layer with a filter function
     var geojsonLayer = L.geoJson(this.state.geojson, {
       onEachFeature: this.onEachFeature,
       pointToLayer: this.pointToLayer,
       filter: this.filter
     });
+    // add the new geojson layer to the map
     geojsonLayer.addTo(this.map);
+    // update the component state with the new geojson layer
     this.setState({geojsonLayer: geojsonLayer});
-    // fit the map to the new geojson layer's extent
-    this.zoomToFeature(this.state.geojsonLayer);
+    // fit the map to the new geojson layer's geographic extent
+    this.zoomToFeature(geojsonLayer);
   },
 
   zoomToFeature: function(target) {
@@ -158,6 +163,7 @@ var Map = React.createClass({
       paddingTopLeft: [200,10],
       paddingBottomRight: [10,10]
     };
+    // set the map's center & zoom so that it fits the geographic extent of the layer
     this.map.fitBounds(target.getBounds(), fitBoundsParams);
   },
 
@@ -232,9 +238,10 @@ var Map = React.createClass({
     L.control.zoom({ position: "bottomleft"}).addTo(this.map);
     L.control.scale({ position: "bottomleft"}).addTo(this.map);
 
-    // set our state to include the tile layer
+    // a TileLayer is used as the "basemap"
     var tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(this.map);
 
+    // set our state to include the tile layer
     this.setState({
       tileLayer: tileLayer
     });
@@ -243,15 +250,20 @@ var Map = React.createClass({
   render : function() {
     // return our JSX that is rendered to the DOM
     // we pass our Filter component props such as subwayLines array, filter & updateMap methods
+
     return (
       <div id="mapUI">
-        <Filter lines={subwayLines} curFilter={this.state.filter} filterLines={this.updateMap} />
+        {
+          /* render the Filter component only after the subwayLines array has been created */
+          subwayLines.length ?
+            <Filter lines={subwayLines} curFilter={this.state.filter} filterLines={this.updateMap} /> :
+            null
+        }
         <div id="map" />
       </div>
     );
   }
 });
-
 
 // export our Map component so that Browserify can include it with other components that require it
 module.exports = Map;
