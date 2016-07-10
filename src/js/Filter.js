@@ -12,21 +12,22 @@ var Filter = React.createClass({
     return {
       lines: [],
       curFilter: ''
-    }
+    };
   },
 
   updateFilter: function(e) {
     // console.log(e.target.value);
-    this.state.filter = e.target.value;
-    this.setState({
-      filter: this.state.filter
-    });
-    this.handleUpdate();
+    // this.state.filter = e.target.value;
+    // this.setState({
+    //   filter: this.state.filter
+    // });
+    // this.handleUpdate();
+    this.props.filterLines(e.target.value);
   },
 
   handleUpdate: function(){
     // filterLines passes the value of "filter" to the Map component's updateMap method
-    this.props.filterLines(this.state.filter);
+    // this.props.filterLines(this.state.filter);
   },
 
   render: function() {
@@ -43,7 +44,7 @@ var Filter = React.createClass({
         <select defaultValue="*" type="select" name="filterlines" onChange={this.updateFilter}>
             { /* This is how to do a comment in JSX! notice the curly braces. */ }
             { /* We render the select's option elements by maping each of the values of subwayLines array to option elements */ }
-            {this.props.lines.map(function(line, i){   
+            {this.props.lines.map(function(line, i){
                 { /* the "key" property is recommended by React when creating list like elements */ }
                 return (
                   <option value={line} key={i}>{line}</option>

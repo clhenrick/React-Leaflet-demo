@@ -15,10 +15,6 @@ var browserify = require('browserify');
 var watchify = require('watchify');
 var reactify = require('reactify');
 
-// TODO: implement browserSync with live page reloading
-// var browserSync = require('browser-sync');
-// var reload = browserSync.reload;
-
 // object containing file names and paths for output
 var path = {
   HTML: 'src/index.html',
@@ -52,13 +48,14 @@ gulp.task('watch', function() {
 
   var watcher  = watchify(
     browserify({
-    entries: [path.ENTRY_POINT],
-    transform: [reactify],
-    debug: true,
-    cache: {}, 
-    packageCache: {}, 
-    fullPaths: true
-  }));
+      entries: [path.ENTRY_POINT],
+      transform: [reactify],
+      debug: true,
+      cache: {},
+      packageCache: {},
+      fullPaths: true
+    })
+  );
 
   return watcher.on('update', function () {
     watcher.bundle()
