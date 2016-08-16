@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # React Leaflet Web Map Demo
 
 A ~~bare bones vanilla~~ [Leaflet.JS](http://leafletjs.com/examples/quick-start.html) map created using <a href="https://facebook.github.io/react/">React</a> and [Create React App](https://github.com/facebookincubator/create-react-app) as a starting point for the app scaffolding.
@@ -411,4 +410,3 @@ Use the [Heroku Buildpack for create-react-app](https://github.com/mars/create-r
 ### Something Missing?
 
 If you have ideas for more “How To” recipes that should be on this page, [let us know](https://github.com/facebookincubator/create-react-app/issues) or [contribute some!](https://github.com/facebookincubator/create-react-app/edit/master/template/README.md)
->>>>>>> 546238b... use create-react-app template
