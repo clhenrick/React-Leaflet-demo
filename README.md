@@ -2,7 +2,7 @@
 
 A ~~bare bones vanilla~~ [Leaflet.JS](http://leafletjs.com/examples/quick-start.html) map created using <a href="https://facebook.github.io/react/">React</a> and [Create React App](https://github.com/facebookincubator/create-react-app) as a starting point for the app scaffolding.
 
-View it live at [leaflet-react.clhenrick.io](http://leaflet-react.clhenrick.io/)
+[View the live demo.](http://clhenrick.github.io/React-Leaflet-demo/)
 
 This demo instantiates a Leaflet Map with a Tile Layer, then loads a GeoJSON layer. It implements React components to filter the data and update the map.
 
