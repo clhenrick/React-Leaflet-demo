@@ -1,13 +1,11 @@
-var React = require('react');
-var Map = require('./Map');
+import React, { Component } from 'react';
+import Map from './Map';
 
 // App component
-var App = React.createClass({
-  render: function() {
-    return (
-			<Map />
-    );
+class App extends Component {
+  render() {
+    return <Map />;
   }
-});
+}
 
-module.exports = App;
+export default App;

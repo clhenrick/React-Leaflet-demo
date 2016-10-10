@@ -1,32 +1,31 @@
-var React = require('react');
+import React, { Component } from 'react';
 
 // the UI component for filtering the subway entrances by subway line
-var Filter = React.createClass({
-  getDefaultProps: function(){
-    return {
+class Filter extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       lines: [],
       curFilter: ''
     };
-  },
+  }
 
-  updateFilter: function(e) {
-    // pass the filter to our callback which tells our Map to update the GeoJSON overlay
+  updateFilter(e) {
     this.props.filterLines(e.target.value);
-  },
+  }
 
-  render: function() {
-    // this is the JSX that will become the Filter UI in the DOM, notice it looks pretty similar to HTML
-    // notice in the select element onChange is set to the updateFilter method
-    // thus when a user selects a new subway line to view, the component passes the new filter value
-    // to the parent component, Map, which reloads the GeoJSON data with the current filter value
+  render() {
     return (
+      // this is the JSX that will become the Filter UI in the DOM, notice it looks pretty similar to HTML
+      // notice in the select element onChange is set to the updateFilter method
+      // thus when a user selects a new subway line to view, the component passes the new filter value
+      // to the parent component, Map, which reloads the GeoJSON data with the current filter value
       <div className="filterSubwayLines">
         <hr/>
         <h3>Brooklyn Subway Entrances</h3>
         <p>A <a href="http://leafletjs.com/">Leaflet</a> &amp; <a href="https://facebook.github.io/react/">React</a> demo</p>
         <p>Filter Entrances by Subway Line</p>
         <select defaultValue="*" type="select" name="filterlines" onChange={this.updateFilter}>
-            { /* This is how to do a comment in JSX! notice the curly braces. */ }
             { /* We render the select's option elements by maping each of the values of subwayLines array to option elements */ }
             {this.props.lines.map(function(line, i){
               /* the "key" property is recommended by React when creating list like elements */
@@ -38,7 +37,7 @@ var Filter = React.createClass({
       </div>
     );
   }
-});
+}
 
 // make sure to export our module so that it can be used elsewhere
-module.exports = Filter;
+export default Filter;
