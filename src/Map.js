@@ -93,7 +93,8 @@ class Map extends Component {
     });
   }
 
-  updateMap(subwayLine) {
+  updateMap(e) {
+    let subwayLine = e.target.value;
     // change the subway line filter
     if (subwayLine === "All lines") {
       subwayLine = "*";
@@ -167,7 +168,8 @@ class Map extends Component {
     if (feature.properties && feature.properties.NAME && feature.properties.LINE) {
 
       // if the array for unique subway line names has not been made, create it
-      if (subwayLineNames.length < this.state.numEntrances) {
+      // there are 19 unique names total
+      if (subwayLineNames.length < 19) {
 
         // add subway line name if it doesn't yet exist in the array
         feature.properties.LINE.split('-').forEach(function(line, index){
