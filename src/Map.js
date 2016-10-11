@@ -1,31 +1,18 @@
-// this is the Map component for React!
-// import some dependencies
-var React = require('react');
-var ReactDOM = require('react-dom');
-var L = require('leaflet');
-require('leaflet/dist/leaflet.css');
-
+import React, { Component } from 'react';
+import L from 'leaflet';
+// postCSS import of Leaflet's CSS
+import 'leaflet/dist/leaflet.css';
 // using webpack json loader we can import our geojson file like this
-var geojson = require('json!./bk_subway_entrances.geojson');
+import geojson from 'json!./bk_subway_entrances.geojson';
+// import local components Filter and ForkMe
+import Filter from './Filter';
+import ForkMe from './ForkMe';
 
-// import our subway line filter component
-var Filter = require('./Filter');
-
-// import our "Fork Me On Github" link component
-var ForkMe = require('./ForkMe');
-
-// let's store the map configuration properties,
-// we could also move this to a separate file & require it...
-var config = {};
-
-// an array to store BK subway lines
-var tmpSubwayLines = [];
-// tmp array used to eventually create the above array
-var subwayLines = [];
-
-// map paramaters to pass to L.map when we instantiate it
+// store the map configuration properties in an object,
+// we could also move this to a separate file & import it if desired.
+let config = {};
 config.params = {
-  center: [40.655769,-73.938503], //Greenpoint
+  center: [40.655769,-73.938503],
   zoomControl: false,
   zoom: 13,
   maxZoom: 19,
@@ -35,8 +22,6 @@ config.params = {
   infoControl: false,
   attributionControl: true
 };
-
-// params for the L.tileLayer (aka basemap)
 config.tileLayer = {
   uri: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
   params: {
@@ -47,128 +32,124 @@ config.tileLayer = {
   }
 };
 
-// here's the actual component
-var Map = React.createClass({
-  getInitialState: function() {
-    // TODO: if we wanted an initial "state" for our map component we could add it here
-    return {
-      tileLayer : null,
+// array to store unique names of Brooklyn subway lines,
+// this eventually gets passed down to the Filter component
+let subwayLineNames = [];
+
+class Map extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      map: null,
+      tileLayer: null,
       geojsonLayer: null,
       geojson: null,
-      filter: '*',
-      numEntrances: null,
+      subwayLinesFilter: '*',
+      numEntrances: null
     };
-  },
+    this._mapNode = null;
+    this.updateMap = this.updateMap.bind(this);
+    this.onEachFeature = this.onEachFeature.bind(this);
+    this.pointToLayer = this.pointToLayer.bind(this);
+    this.filterFeatures = this.filterFeatures.bind(this);
+    this.filterGeoJSONLayer = this.filterGeoJSONLayer.bind(this);
+  }
 
-  // a variable to store our instance of L.map
-  map: null,
-
-  componentWillMount: function() {
-    // code to run just before adding the map
-  },
-
-  componentDidMount: function() {
+  componentDidMount() {
     // code to run just after the component "mounts" / DOM elements are created
-    // make the AJAX request for the GeoJSON data
+    // we could make an AJAX request for the GeoJSON data here if it wasn't stored locally
     this.getData();
     // create the Leaflet map object
-    if (!this.map) this.init(this.getID());
-  },
+    if (!this.state.map) this.init(this._mapNode);
+  }
 
   componentDidUpdate(prevProps, prevState) {
     // code to run when the component receives new props or state
     // check to see if geojson is stored, map is created, and geojson overlay needs to be added
-    if (this.state.geojson && this.map && !this.state.geojsonLayer) {
+    if (this.state.geojson && this.state.map && !this.state.geojsonLayer) {
       // add the geojson overlay
       this.addGeoJSONLayer(this.state.geojson);
     }
 
     // check to see if the subway lines filter has changed
-    if (this.state.filter !== prevState.filter) {
+    if (this.state.subwayLinesFilter !== prevState.subwayLinesFilter) {
       // filter / re-render the geojson overlay
       this.filterGeoJSONLayer();
     }
-  },
+  }
 
-  componentWillUnmount: function() {
+  componentWillUnmount() {
     // code to run just before unmounting the component
     // this destroys the Leaflet map object & related event listeners
-    this.map.remove();
-  },
+    this.state.map.remove();
+  }
 
-  updateMap: function(subwayLine) {
+  getData() {
+    // could also be an AJAX request that results in setting state with the geojson data
+    // for simplicity sake we are just importing the geojson data using webpack's json loader
+    this.setState({
+      numEntrances: geojson.features.length,
+      geojson
+    });
+  }
+
+  updateMap(subwayLine) {
     // change the subway line filter
     if (subwayLine === "All lines") {
       subwayLine = "*";
     }
     // update our state with the new filter value
     this.setState({
-      filter: subwayLine
+      subwayLinesFilter: subwayLine
     });
-  },
+  }
 
-  getData: function() {
-		this.setState({
-			numEntrances: geojson.features.length,
-			geojson: geojson
-		});
-  },
-
-  addGeoJSONLayer: function(geojson) {
+  addGeoJSONLayer(geojson) {
     // create a native Leaflet GeoJSON SVG Layer to add as an interactive overlay to the map
     // an options object is passed to define functions for customizing the layer
-    var geojsonLayer = L.geoJson(geojson, {
-      onEachFeature: this.onEachFeature,
-      pointToLayer: this.pointToLayer
-    });
-    // add our GeoJSON layer to the Leaflet map object
-    geojsonLayer.addTo(this.map);
-    // store the Leaflet GeoJSON layer in our component state for use later
-    this.setState({ geojsonLayer: geojsonLayer });
-    // fit the geographic extent of the GeoJSON layer within the map's bounds / viewport
-    this.zoomToFeature(geojsonLayer);
-  },
-
-  filterGeoJSONLayer: function() {
-    // clear the geojson layer of its old data
-    this.state.geojsonLayer.clearLayers();
-    // create the new geojson layer with a filter function
-    var geojsonLayer = L.geoJson(this.state.geojson, {
+    const geojsonLayer = L.geoJson(geojson, {
       onEachFeature: this.onEachFeature,
       pointToLayer: this.pointToLayer,
-      filter: this.filter
+      filter: this.filterFeatures
     });
-    // add the new geojson layer to the map
-    geojsonLayer.addTo(this.map);
-    // update the component state with the new geojson layer
-    this.setState({geojsonLayer: geojsonLayer});
-    // fit the map to the new geojson layer's geographic extent
+    // add our GeoJSON layer to the Leaflet map object
+    geojsonLayer.addTo(this.state.map);
+    // store the Leaflet GeoJSON layer in our component state for use later
+    this.setState({ geojsonLayer });
+    // fit the geographic extent of the GeoJSON layer within the map's bounds / viewport
     this.zoomToFeature(geojsonLayer);
-  },
+  }
 
-  zoomToFeature: function(target) {
+  filterGeoJSONLayer() {
+    // clear the geojson layer of its data
+    this.state.geojsonLayer.clearLayers();
+    // re-add the geojson so that it filters out subway lines which do not match state.filter
+    this.state.geojsonLayer.addData(geojson);
+    // fit the map to the new geojson layer's geographic extent
+    this.zoomToFeature(this.state.geojsonLayer);
+  }
+
+  zoomToFeature(target) {
     // pad fitBounds() so features aren't hidden under the Filter UI element
     var fitBoundsParams = {
       paddingTopLeft: [200,10],
       paddingBottomRight: [10,10]
     };
     // set the map's center & zoom so that it fits the geographic extent of the layer
-    this.map.fitBounds(target.getBounds(), fitBoundsParams);
-  },
+    this.state.map.fitBounds(target.getBounds(), fitBoundsParams);
+  }
 
-  filter: function(feature, layer) {
+  filterFeatures(feature, layer) {
     // filter the subway entrances based on the map's current search filter
     // returns true only if the filter value matches the value of feature.properties.LINE
-    var test = feature.properties.LINE.split('-').indexOf(this.state.filter);
-
-    if (this.state.filter === '*' || test !== -1) {
+    const test = feature.properties.LINE.split('-').indexOf(this.state.subwayLinesFilter);
+    if (this.state.subwayLinesFilter === '*' || test !== -1) {
       return true;
     }
-  },
+  }
 
-  pointToLayer: function(feature, latlng) {
+  pointToLayer(feature, latlng) {
     // renders our GeoJSON points as circle markers, rather than Leaflet's default image markers
-
     // parameters to style the GeoJSON markers
     var markerParams = {
       radius: 4,
@@ -180,80 +161,67 @@ var Map = React.createClass({
     };
 
     return L.circleMarker(latlng, markerParams);
-  },
+  }
 
-  onEachFeature: function(feature, layer) {
-    // this method is used to create popups for the GeoJSON features
-    // it also creates the initial array of unique subway line names which is later passed to the Filter component
-
+  onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.NAME && feature.properties.LINE) {
+
       // if the array for unique subway line names has not been made, create it
-      if (subwayLines.length === 0) {
-        // add subway line names to a temporary subway lines array
+      if (subwayLineNames.length < this.state.numEntrances) {
+
+        // add subway line name if it doesn't yet exist in the array
         feature.properties.LINE.split('-').forEach(function(line, index){
-          tmpSubwayLines.push(line);
+          if (subwayLineNames.indexOf(line) === -1) subwayLineNames.push(line);
         });
 
-        // on the last GeoJSON feature make a new array of unique values from the temporary array
+        // on the last GeoJSON feature
         if (this.state.geojson.features.indexOf(feature) === this.state.numEntrances - 1) {
-          // use filter() to make sure the subway line names array has one value for each subway line
-          // use sort() to put our values in numeric and alphabetical order
-          subwayLines = tmpSubwayLines.filter(function(value, index, self){
-            return self.indexOf(value) === index;
-          }).sort();
+          // use sort() to put our values in alphanumeric order
+          subwayLineNames.sort();
           // finally add a value to represent all of the subway lines
-          subwayLines.unshift('All lines');
+          subwayLineNames.unshift('All lines');
         }
       }
 
-      // assemble the HTML for the markers' popups
-      var popupContent = '<h3>' + feature.properties.NAME +
-                         '</h3><strong>Access to MTA lines:</strong> ' +
-                         feature.properties.LINE;
+      // assemble the HTML for the markers' popups (Leaflet's bindPopup method doesn't accept React JSX)
+      const popupContent = `<h3>${feature.properties.NAME}</h3>
+        <strong>Access to MTA lines: </strong>${feature.properties.LINE}`;
+
       // add our popups
       layer.bindPopup(popupContent);
     }
-  },
+  }
 
-  getID: function() {
-    // get the "id" attribute of our component's DOM node
-    return ReactDOM.findDOMNode(this).querySelectorAll('#map')[0];
-  },
-
-  init: function(id) {
-    if (this.map) return;
+  init(id) {
+    if (this.state.map) return;
     // this function creates the Leaflet map object and is called after the Map component mounts
-    this.map = L.map(id, config.params);
-    L.control.zoom({ position: "bottomleft"}).addTo(this.map);
-    L.control.scale({ position: "bottomleft"}).addTo(this.map);
+    let map = L.map(id, config.params);
+    L.control.zoom({ position: "bottomleft"}).addTo(map);
+    L.control.scale({ position: "bottomleft"}).addTo(map);
 
     // a TileLayer is used as the "basemap"
-    var tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(this.map);
+    const tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
 
     // set our state to include the tile layer
-    this.setState({
-      tileLayer: tileLayer
-    });
-  },
+    this.setState({ map, tileLayer });
+  }
 
-  render : function() {
-    // return our JSX that is rendered to the DOM
-    // we pass our Filter component props such as subwayLines array, filter & updateMap methods
-
+  render() {
+    const { subwayLinesFilter } = this.state;
     return (
       <div id="mapUI">
         {
           /* render the Filter component only after the subwayLines array has been created */
-          subwayLines.length ?
-            <Filter lines={subwayLines} curFilter={this.state.filter} filterLines={this.updateMap} /> :
-            null
+          subwayLineNames.length &&
+            <Filter lines={subwayLineNames}
+              curFilter={subwayLinesFilter}
+              filterLines={this.updateMap} />
         }
-        <div id="map" />
-				<ForkMe />
+        <div ref={(node) => this._mapNode = node} id="map" />
+        <ForkMe />
       </div>
     );
   }
-});
+}
 
-// export our Map component so that Browserify can include it with other components that require it
-module.exports = Map;
+export default Map;
