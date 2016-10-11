@@ -6,6 +6,8 @@ A ~~bare bones vanilla~~ [Leaflet.JS](http://leafletjs.com/examples/quick-start.
 
 This demo instantiates a Leaflet Map with a Tile Layer, then loads a GeoJSON layer. It implements React components to filter the data and update the map.
 
+To view the code without ES6 syntax take a look at the `es5-version` branch.
+
 To view the bare bones example that doesn't do anything GeoJSON related, take a look at the `bare-bones` branch.
 
 Read the comments in `src/` to see what is going on.
